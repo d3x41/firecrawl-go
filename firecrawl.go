@@ -213,11 +213,12 @@ type FirecrawlApp struct {
 // Parameters:
 //   - apiKey: The API key for authenticating with the Firecrawl API. If empty, it will be retrieved from the FIRECRAWL_API_KEY environment variable.
 //   - apiURL: The base URL for the Firecrawl API. If empty, it will be retrieved from the FIRECRAWL_API_URL environment variable, defaulting to "https://api.firecrawl.dev".
+//   - timeout: The timeout for the HTTP client. If not provided, it will default to 60 seconds.
 //
 // Returns:
 //   - *FirecrawlApp: A new instance of FirecrawlApp configured with the provided or retrieved API key and API URL.
 //   - error: An error if the API key is not provided or retrieved.
-func NewFirecrawlApp(apiKey, apiURL string) (*FirecrawlApp, error) {
+func NewFirecrawlApp(apiKey, apiURL string, timeout ...time.Duration) (*FirecrawlApp, error) {
 	if apiKey == "" {
 		apiKey = os.Getenv("FIRECRAWL_API_KEY")
 		if apiKey == "" {
@@ -232,8 +233,13 @@ func NewFirecrawlApp(apiKey, apiURL string) (*FirecrawlApp, error) {
 		}
 	}
 
+	t := 60 * time.Second // default
+	if len(timeout) > 0 {
+		t = timeout[0]
+	}
+
 	client := &http.Client{
-		Timeout: 60 * time.Second,
+		Timeout: t,
 	}
 
 	return &FirecrawlApp{
