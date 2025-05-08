@@ -233,7 +233,7 @@ func NewFirecrawlApp(apiKey, apiURL string, timeout ...time.Duration) (*Firecraw
 		}
 	}
 
-	t := 60 * time.Second // default
+	t := 120 * time.Second // default
 	if len(timeout) > 0 {
 		t = timeout[0]
 	}
