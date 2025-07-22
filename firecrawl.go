@@ -239,6 +239,8 @@ func NewFirecrawlApp(apiKey, apiURL string, timeout ...time.Duration) (*Firecraw
 	}
 
 	client := &http.Client{
+		Timeout:   60 * time.Second,
+		Transport: http.DefaultTransport,
 		Timeout: t,
 	}
 
