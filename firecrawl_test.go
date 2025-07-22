@@ -398,3 +398,71 @@ func TestMapURLWithSearchParameter(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Search is not implemented in API version 1.0.0")
 }
+
+func TestScrapeURLWithMaxAge(t *testing.T) {
+	app, err := NewFirecrawlApp(TEST_API_KEY, API_URL)
+	require.NoError(t, err)
+
+	// Test with maxAge set to 1 hour (3600000 milliseconds)
+	params := &ScrapeParams{
+		Formats: []string{"markdown"},
+		MaxAge:  ptr(3600000), // 1 hour in milliseconds
+	}
+
+	response, err := app.ScrapeURL("https://roastmywebsite.ai", params)
+	require.NoError(t, err)
+	assert.NotNil(t, response)
+
+	assert.Contains(t, response.Markdown, "_Roast_")
+	assert.NotEqual(t, response.Markdown, "")
+	assert.NotNil(t, response.Metadata)
+}
+
+func TestScrapeURLWithMaxAgeZero(t *testing.T) {
+	app, err := NewFirecrawlApp(TEST_API_KEY, API_URL)
+	require.NoError(t, err)
+
+	// Test with maxAge set to 0 (disable caching)
+	params := &ScrapeParams{
+		Formats: []string{"markdown"},
+		MaxAge:  ptr(0), // Disable caching
+	}
+
+	response, err := app.ScrapeURL("https://roastmywebsite.ai", params)
+	require.NoError(t, err)
+	assert.NotNil(t, response)
+
+	assert.Contains(t, response.Markdown, "_Roast_")
+	assert.NotEqual(t, response.Markdown, "")
+	assert.NotNil(t, response.Metadata)
+}
+
+func TestCrawlURLWithMaxAge(t *testing.T) {
+	app, err := NewFirecrawlApp(TEST_API_KEY, API_URL)
+	require.NoError(t, err)
+
+	// Test crawling with maxAge set to 1 hour (3600000 milliseconds)
+	params := &CrawlParams{
+		ScrapeOptions: ScrapeParams{
+			Formats: []string{"markdown"},
+			MaxAge:  ptr(3600000), // 1 hour in milliseconds
+		},
+		Limit: ptr(5), // Limit to 5 pages for faster test
+	}
+
+	response, err := app.CrawlURL("https://roastmywebsite.ai", params, nil)
+	require.NoError(t, err)
+	assert.NotNil(t, response)
+
+	assert.Greater(t, response.Total, 0)
+	assert.Greater(t, response.Completed, 0)
+	assert.Greater(t, response.CreditsUsed, 0)
+	assert.NotEmpty(t, response.ExpiresAt)
+	assert.Equal(t, response.Status, "completed")
+
+	data := response.Data
+	assert.IsType(t, []*FirecrawlDocument{}, data)
+	assert.Greater(t, len(data), 0)
+	assert.Contains(t, data[0].Markdown, "_Roast_")
+	assert.NotNil(t, data[0].Metadata)
+}

@@ -88,6 +88,7 @@ type ScrapeParams struct {
 	WaitFor         *int               `json:"waitFor,omitempty"`
 	ParsePDF        *bool              `json:"parsePDF,omitempty"`
 	Timeout         *int               `json:"timeout,omitempty"`
+	MaxAge          *int               `json:"maxAge,omitempty"`
 }
 
 // ScrapeResponse represents the response for scraping operations
@@ -306,6 +307,9 @@ func (app *FirecrawlApp) ScrapeURL(url string, params *ScrapeParams) (*Firecrawl
 		}
 		if params.Timeout != nil {
 			scrapeBody["timeout"] = params.Timeout
+		}
+		if params.MaxAge != nil {
+			scrapeBody["maxAge"] = params.MaxAge
 		}
 	}
 
