@@ -68,12 +68,20 @@ type FirecrawlDocumentMetadata struct {
 	Error             *string              `json:"error,omitempty"`
 }
 
+// JsonOptions represents the options for JSON extraction
+type JsonOptions struct {
+	Schema       map[string]any `json:"schema,omitempty"`
+	SystemPrompt *string        `json:"systemPrompt,omitempty"`
+	Prompt       *string        `json:"prompt,omitempty"`
+}
+
 // FirecrawlDocument represents a document in Firecrawl
 type FirecrawlDocument struct {
 	Markdown   string                     `json:"markdown,omitempty"`
 	HTML       string                     `json:"html,omitempty"`
 	RawHTML    string                     `json:"rawHtml,omitempty"`
 	Screenshot string                     `json:"screenshot,omitempty"`
+	JSON       map[string]any             `json:"json,omitempty"`
 	Links      []string                   `json:"links,omitempty"`
 	Metadata   *FirecrawlDocumentMetadata `json:"metadata,omitempty"`
 }
@@ -89,6 +97,7 @@ type ScrapeParams struct {
 	ParsePDF        *bool              `json:"parsePDF,omitempty"`
 	Timeout         *int               `json:"timeout,omitempty"`
 	MaxAge          *int               `json:"maxAge,omitempty"`
+	JsonOptions     *JsonOptions       `json:"jsonOptions,omitempty"`
 }
 
 // ScrapeResponse represents the response for scraping operations
@@ -240,9 +249,8 @@ func NewFirecrawlApp(apiKey, apiURL string, timeout ...time.Duration) (*Firecraw
 	}
 
 	client := &http.Client{
-		Timeout:   60 * time.Second,
+		Timeout:   t,
 		Transport: http.DefaultTransport,
-		Timeout: t,
 	}
 
 	return &FirecrawlApp{
@@ -310,6 +318,9 @@ func (app *FirecrawlApp) ScrapeURL(url string, params *ScrapeParams) (*Firecrawl
 		}
 		if params.MaxAge != nil {
 			scrapeBody["maxAge"] = params.MaxAge
+		}
+		if params.JsonOptions != nil {
+			scrapeBody["jsonOptions"] = params.JsonOptions
 		}
 	}
 

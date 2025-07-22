@@ -466,3 +466,81 @@ func TestCrawlURLWithMaxAge(t *testing.T) {
 	assert.Contains(t, data[0].Markdown, "_Roast_")
 	assert.NotNil(t, data[0].Metadata)
 }
+
+func TestScrapeURLWithJsonOptions(t *testing.T) {
+	app, err := NewFirecrawlApp(TEST_API_KEY, API_URL)
+	require.NoError(t, err)
+
+	// Test with JsonOptions for LLM extraction
+	systemPrompt := "You are a helpful assistant that extracts information from web pages."
+	prompt := "Extract the main title and description from this page."
+
+	params := &ScrapeParams{
+		Formats: []string{"markdown", "json"},
+		JsonOptions: &JsonOptions{
+			Schema: map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"title": map[string]any{
+						"type": "string",
+					},
+					"description": map[string]any{
+						"type": "string",
+					},
+				},
+				"required": []string{"title", "description"},
+			},
+			SystemPrompt: &systemPrompt,
+			Prompt:       &prompt,
+		},
+	}
+
+	response, err := app.ScrapeURL("https://roastmywebsite.ai", params)
+	require.NoError(t, err)
+	assert.NotNil(t, response)
+
+	assert.Contains(t, response.Markdown, "_Roast_")
+	assert.NotEqual(t, response.Markdown, "")
+	assert.NotNil(t, response.Metadata)
+	assert.NotNil(t, response.JSON)
+
+	// Check that the extracted data contains the expected fields
+	assert.Contains(t, response.JSON, "title")
+	assert.Contains(t, response.JSON, "description")
+	assert.Contains(t, response.JSON["title"], "_Roast_")
+}
+
+// test json options for scrape url
+func TestScrapeURLWithJSONOptions(t *testing.T) {
+	app, err := NewFirecrawlApp(TEST_API_KEY, API_URL)
+	require.NoError(t, err)
+
+	params := &ScrapeParams{
+		Formats: []string{"json"},
+		JsonOptions: &JsonOptions{
+			Schema: map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"mission": map[string]any{
+						"type": "string",
+					},
+					"products": map[string]any{
+						"type": "array",
+						"items": map[string]any{
+							"type": "object",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	response, err := app.ScrapeURL("https://roastmywebsite.ai", params)
+	require.NoError(t, err)
+	assert.NotNil(t, response)
+	// When using jsonOptions, the extracted data is in JSON field
+	assert.NotNil(t, response.JSON)
+
+	// Check that the extracted data contains the expected fields
+	assert.Contains(t, response.JSON, "mission")
+}
