@@ -108,15 +108,16 @@ type ScrapeResponse struct {
 
 // CrawlParams represents the parameters for a crawl request.
 type CrawlParams struct {
-	ScrapeOptions      ScrapeParams `json:"scrapeOptions"`
-	Webhook            *string      `json:"webhook,omitempty"`
-	Limit              *int         `json:"limit,omitempty"`
-	IncludePaths       []string     `json:"includePaths,omitempty"`
-	ExcludePaths       []string     `json:"excludePaths,omitempty"`
-	MaxDepth           *int         `json:"maxDepth,omitempty"`
-	AllowBackwardLinks *bool        `json:"allowBackwardLinks,omitempty"`
-	AllowExternalLinks *bool        `json:"allowExternalLinks,omitempty"`
-	IgnoreSitemap      *bool        `json:"ignoreSitemap,omitempty"`
+	ScrapeOptions         ScrapeParams `json:"scrapeOptions"`
+	Webhook               *string      `json:"webhook,omitempty"`
+	Limit                 *int         `json:"limit,omitempty"`
+	IncludePaths          []string     `json:"includePaths,omitempty"`
+	ExcludePaths          []string     `json:"excludePaths,omitempty"`
+	MaxDepth              *int         `json:"maxDepth,omitempty"`
+	AllowBackwardLinks    *bool        `json:"allowBackwardLinks,omitempty"`
+	AllowExternalLinks    *bool        `json:"allowExternalLinks,omitempty"`
+	IgnoreSitemap         *bool        `json:"ignoreSitemap,omitempty"`
+	IgnoreQueryParameters *bool        `json:"ignoreQueryParameters,omitempty"`
 }
 
 // CrawlResponse represents the response for crawling operations
@@ -397,6 +398,9 @@ func (app *FirecrawlApp) CrawlURL(url string, params *CrawlParams, idempotencyKe
 		if params.IgnoreSitemap != nil {
 			crawlBody["ignoreSitemap"] = params.IgnoreSitemap
 		}
+		if params.IgnoreQueryParameters != nil {
+			crawlBody["ignoreQueryParameters"] = params.IgnoreQueryParameters
+		}
 	}
 
 	actualPollInterval := 2
@@ -472,6 +476,9 @@ func (app *FirecrawlApp) AsyncCrawlURL(url string, params *CrawlParams, idempote
 		}
 		if params.IgnoreSitemap != nil {
 			crawlBody["ignoreSitemap"] = params.IgnoreSitemap
+		}
+		if params.IgnoreQueryParameters != nil {
+			crawlBody["ignoreQueryParameters"] = params.IgnoreQueryParameters
 		}
 	}
 
